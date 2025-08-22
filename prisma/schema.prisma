@@ -1,0 +1,249 @@
+// prisma/schema.prisma
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+/**
+ * Notes:
+ * - All timestamps use TIMESTAMPTZ via @db.Timestamptz(6).
+ * - updated_at is managed by Prisma with @updatedAt.
+ * - UUID primary keys default to cuid() for app-level generation; you can switch to dbgenerated("gen_random_uuid()") if you prefer DB-generated UUIDs and have pgcrypto/uuid-ossp.
+ * - JSONB fields use @db.JsonB.
+ * - Unique and FK constraints match the specification.
+ * - ON DELETE policies implemented per requirements.
+ */
+
+// ===== Enums =====
+enum UserRole {
+  student
+  teacher
+  university_admin
+}
+
+enum TeacherRequestStatus {
+  pending
+  approved
+  rejected
+}
+
+enum ClassRole {
+  student
+  ta
+  co_teacher
+}
+
+enum Verdict {
+  accepted
+  failed
+  partial
+  error
+  timeout
+  runtime_error
+  compile_error
+  unknown
+}
+
+enum InterviewSessionStatus {
+  in_progress
+  completed
+  failed
+}
+
+// ===== Models =====
+
+model users {
+  id            String   @id @default(uuid()) @db.Uuid
+  email         String   @unique
+  name          String?
+  role          UserRole
+  password_hash String
+  created_at    DateTime @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime @updatedAt @db.Timestamptz(6)
+
+  // Relations
+  teacher_access_requests teacher_access_requests?
+  classrooms              classrooms[]             @relation("TeacherOwnsClassroom")
+  classroom_members       classroom_members[]
+  problems                problems[]               @relation("ProblemAuthor")
+  code_submissions        code_submissions[]
+  interview_sessions      interview_sessions[]
+
+  @@map("users")
+}
+
+model teacher_access_requests {
+  id      String               @id @default(uuid()) @db.Uuid
+  user_id String               @unique @db.Uuid
+  status  TeacherRequestStatus @default(pending)
+
+  // Relations
+  user users @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("teacher_access_requests")
+}
+
+model classrooms {
+  id             String   @id @default(uuid()) @db.Uuid
+  name           String
+  teacher_id     String   @db.Uuid
+  classroom_code String   @unique
+  created_at     DateTime @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime @updatedAt @db.Timestamptz(6)
+
+  // Relations
+  teacher           users               @relation("TeacherOwnsClassroom", fields: [teacher_id], references: [id], onDelete: Restrict)
+  classroom_members classroom_members[]
+  modules           modules[] // CASCADE via module FK on classroom_id
+  problems          problems[] // RESTRICT via problem FK on classroom_id
+
+  @@map("classrooms")
+}
+
+model classroom_members {
+  id            String    @id @default(uuid()) @db.Uuid
+  classroom_id  String    @db.Uuid
+  user_id       String    @db.Uuid
+  role_in_class ClassRole @default(student)
+  joined_at     DateTime  @default(now()) @db.Timestamptz(6)
+
+  // Relations
+  classroom classrooms @relation(fields: [classroom_id], references: [id], onDelete: Cascade)
+  user      users      @relation(fields: [user_id], references: [id], onDelete: Restrict)
+
+  @@unique([classroom_id, user_id])
+  @@map("classroom_members")
+}
+
+model modules {
+  id           String   @id @default(uuid()) @db.Uuid
+  classroom_id String   @db.Uuid
+  title        String
+  description  String?
+  order_index  Int?
+  created_at   DateTime @default(now()) @db.Timestamptz(6)
+  updated_at   DateTime @updatedAt @db.Timestamptz(6)
+
+  // Relations
+  classroom  classrooms           @relation(fields: [classroom_id], references: [id], onDelete: Cascade)
+  module_map module_problem_map[]
+  interview  interviews?
+  sessions   interview_sessions[]
+
+  @@map("modules")
+}
+
+model problems {
+  id           String   @id @default(uuid()) @db.Uuid
+  classroom_id String   @db.Uuid
+  author_id    String   @db.Uuid
+  title        String
+  statement_md String
+  testcases    Json     @db.JsonB
+  metadata     Json     @db.JsonB
+  created_at   DateTime @default(now()) @db.Timestamptz(6)
+  updated_at   DateTime @updatedAt @db.Timestamptz(6)
+
+  // Relations
+  classroom        classrooms           @relation(fields: [classroom_id], references: [id], onDelete: Restrict)
+  author           users                @relation("ProblemAuthor", fields: [author_id], references: [id], onDelete: Restrict)
+  module_map       module_problem_map[]
+  code_submissions code_submissions[]
+
+  @@map("problems")
+}
+
+model module_problem_map {
+  id          String @id @default(uuid()) @db.Uuid
+  module_id   String @db.Uuid
+  problem_id  String @db.Uuid
+  order_index Int?
+
+  // Relations
+  module  modules  @relation(fields: [module_id], references: [id], onDelete: Cascade)
+  problem problems @relation(fields: [problem_id], references: [id], onDelete: Restrict)
+
+  @@unique([module_id, problem_id])
+  @@map("module_problem_map")
+}
+
+model interviews {
+  id          String @id @default(uuid()) @db.Uuid
+  module_id   String @unique @db.Uuid
+  description String
+
+  // Relations
+  module   modules              @relation(fields: [module_id], references: [id], onDelete: Cascade)
+  sessions interview_sessions[]
+
+  @@map("interviews")
+}
+
+model code_submissions {
+  id           String   @id @default(uuid()) @db.Uuid
+  user_id      String   @db.Uuid
+  problem_id   String   @db.Uuid
+  language     String
+  code         String
+  verdict      Verdict
+  runtime_ms   Int?
+  memory_kb    Int?
+  test_results Json?    @db.JsonB
+  submitted_at DateTime @default(now()) @db.Timestamptz(6)
+
+  // Relations
+  user    users    @relation(fields: [user_id], references: [id], onDelete: Restrict)
+  problem problems @relation(fields: [problem_id], references: [id], onDelete: Restrict)
+
+  // Helpful index for queries by user/problem and sorting by submitted_at DESC
+  @@index([user_id, problem_id, submitted_at(sort: Desc)])
+  @@map("code_submissions")
+}
+
+model interview_sessions {
+  id           String                 @id @default(uuid()) @db.Uuid
+  user_id      String                 @db.Uuid
+  module_id    String                 @db.Uuid
+  interview_id String                 @db.Uuid
+  started_at   DateTime               @default(now()) @db.Timestamptz(6)
+  ended_at     DateTime?              @db.Timestamptz(6)
+  status       InterviewSessionStatus @default(in_progress)
+
+  // Relations
+  user       users                     @relation(fields: [user_id], references: [id], onDelete: Restrict)
+  module     modules                   @relation(fields: [module_id], references: [id], onDelete: Restrict)
+  interview  interviews                @relation(fields: [interview_id], references: [id], onDelete: Restrict)
+  transcript interview_transcriptions?
+  feedback   interview_feedback?
+
+  @@map("interview_sessions")
+}
+
+model interview_transcriptions {
+  id                   String   @id @default(uuid()) @db.Uuid
+  interview_session_id String   @unique @db.Uuid
+  transcript_json      Json     @db.JsonB
+  created_at           DateTime @default(now()) @db.Timestamptz(6)
+
+  // Relations
+  session interview_sessions @relation(fields: [interview_session_id], references: [id], onDelete: Cascade)
+
+  @@map("interview_transcriptions")
+}
+
+model interview_feedback {
+  id                   String   @id @default(uuid()) @db.Uuid
+  interview_session_id String   @unique @db.Uuid
+  feedback_json        Json     @db.JsonB
+  created_at           DateTime @default(now()) @db.Timestamptz(6)
+
+  // Relations
+  session interview_sessions @relation(fields: [interview_session_id], references: [id], onDelete: Cascade)
+
+  @@map("interview_feedback")
+}
