@@ -4,6 +4,7 @@ import "./globals.css";
 import { AuthSessionProvider } from "@/components/AuthSessionProvider";
 import Navbar from "@/components/layout/Navbar";
 import BodyWrapper from "@/components/layout/BodyWrapper";
+import "@livekit/components-styles";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

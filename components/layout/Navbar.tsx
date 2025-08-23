@@ -13,8 +13,8 @@ export default function Navbar() {
   if (pathname === "/") {
     return (
       <div className="fixed inset-x-0 top-0 z-50 pointer-events-none">
-        <div className="mx-50 mt-4 pointer-events-auto">
-          <div className="flex items-center justify-between border-1 border-white bg-card px-4 py-3 font-mono">
+        <div className="mx-50 pointer-events-auto">
+          <div className="flex items-center justify-between border-1 border-white/90 bg-card px-10 py-3 mt-6 font-mono">
             <div className="flex items-center gap-2">
               <Link href="/" className="text-xl font-semibold tracking-tight">MyUni</Link>
             </div>
