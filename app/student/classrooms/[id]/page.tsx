@@ -13,7 +13,7 @@ export default async function ClassroomDetail({ params }: { params: { id: string
     include: {
       modules: {
         orderBy: { order_index: "asc" },
-        include: { module_map: { include: { problem: true }, orderBy: { order_index: "asc" } } },
+        include: { interview: true, module_map: { include: { problem: true }, orderBy: { order_index: "asc" } } },
       },
     },
   })
@@ -45,7 +45,14 @@ function getRandomQuote() {
 
       {classroom.modules.map((mod) => (
         <div key={mod.id} className="border border-white/15 bg-card/40 p-4">
-          <h3 className="font-medium mb-2">{mod.title}</h3>
+          <div className="flex items-start justify-between mb-2">
+            <h3 className="font-medium">{mod.title}</h3>
+            {mod.interview && (
+              <Link href="/student/interview" className="text-xs border border-white/20 px-3 py-1 hover:bg-white/10">
+                Open interview
+              </Link>
+            )}
+          </div>
           <div className="space-y-2">
             {mod.module_map.map((map) => (
               <Link

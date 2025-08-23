@@ -7,6 +7,8 @@ export default function AddProblemDialog({ moduleId, classroomId }: { moduleId: 
   const [open, setOpen] = useState(false)
   const [title, setTitle] = useState("")
   const [statement, setStatement] = useState("")
+  const [testcasesText, setTestcasesText] = useState("[]")
+  const [metadataText, setMetadataText] = useState("{}")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -14,10 +16,32 @@ export default function AddProblemDialog({ moduleId, classroomId }: { moduleId: 
     setLoading(true)
     setError(null)
     try {
+      let parsedTestcases: any = null
+      let parsedMetadata: any = null
+      try {
+        parsedTestcases = testcasesText.trim() === "" ? [] : JSON.parse(testcasesText)
+      } catch {
+        setError("Testcases must be valid JSON (usually an array)")
+        return
+      }
+      try {
+        parsedMetadata = metadataText.trim() === "" ? {} : JSON.parse(metadataText)
+      } catch {
+        setError("Metadata must be valid JSON (object)")
+        return
+      }
+      if (!Array.isArray(parsedTestcases)) {
+        setError("Testcases JSON must be an array")
+        return
+      }
+      if (parsedMetadata === null || typeof parsedMetadata !== "object" || Array.isArray(parsedMetadata)) {
+        setError("Metadata JSON must be an object")
+        return
+      }
       const res = await fetch(`/api/teacher/modules/${moduleId}/problems`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ classroomId, title, statement })
+        body: JSON.stringify({ classroomId, title, statement, testcases: parsedTestcases, metadata: parsedMetadata })
       })
       if (!res.ok) {
         const data = await res.json().catch(()=>({ error: "Failed" }))
@@ -44,6 +68,10 @@ export default function AddProblemDialog({ moduleId, classroomId }: { moduleId: 
             <input value={title} onChange={(e)=>setTitle(e.target.value)} className="w-full border border-white/20 bg-transparent px-3 py-2 rounded-none" placeholder="Two Sum" />
             <label className="text-sm">Statement (markdown)</label>
             <textarea value={statement} onChange={(e)=>setStatement(e.target.value)} className="w-full h-40 border border-white/20 bg-transparent px-3 py-2 rounded-none" placeholder="Problem statement..." />
+            <label className="text-sm">Testcases (JSON array)</label>
+            <textarea value={testcasesText} onChange={(e)=>setTestcasesText(e.target.value)} className="w-full h-32 border border-white/20 bg-transparent px-3 py-2 rounded-none" placeholder='e.g. [{"input":"1 2","output":"3"}]' />
+            <label className="text-sm">Metadata (JSON object)</label>
+            <textarea value={metadataText} onChange={(e)=>setMetadataText(e.target.value)} className="w-full h-24 border border-white/20 bg-transparent px-3 py-2 rounded-none" placeholder='e.g. {"difficulty":"easy","tags":["array"]}' />
             {error && <p className="text-sm text-red-500">{error}</p>}
           </div>
         </DialogContent>
