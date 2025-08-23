@@ -388,6 +388,18 @@ export async function POST(req: NextRequest) {
         expectedRaw: tc?.output,
       }
     }
+    // Special handling for common shapes like Two Sum: { input: { nums: number[], target: number } }
+    if (tc && tc.input && typeof tc.input === "object" && Array.isArray((tc.input as any).nums) && (tc.input as any).target !== undefined) {
+      const nums = (tc.input as any).nums as any[]
+      const target = (tc.input as any).target
+      const n = Array.isArray(nums) ? nums.length : 0
+      const line1 = `${n}\n`
+      const line2 = `${nums.join(" ")}\n`
+      const line3 = `${String(target)}\n`
+      const stdin = line1 + line2 + line3
+      const expected = tc?.output !== undefined ? JSON.stringify(tc.output) + "\n" : undefined
+      return { stdin, expected, expectedRaw: tc?.output }
+    }
     const stdin = tc?.input !== undefined ? JSON.stringify(tc.input) + "\n" : undefined
     const expected = tc?.output !== undefined ? JSON.stringify(tc.output) + "\n" : undefined
     return { stdin, expected, expectedRaw: tc?.output }
