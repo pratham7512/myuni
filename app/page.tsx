@@ -1,103 +1,83 @@
-import Image from "next/image";
-
 export default function Home() {
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <main>
+      {/* Hero */}
+      <section className="grid md:grid-cols-2">
+        <div className="flex items-center bg-black text-white px-10 py-20">
+          <div className="max-w-xl">
+            <h1 className="text-5xl font-extrabold tracking-tight leading-[1.05]">MyUni: Learn, Code, Interview</h1>
+            <p className="mt-5 text-zinc-300 text-lg">Join classrooms, solve curated DSA problems, get instant verdicts, and run mock interviews — all in one modern, fast experience.</p>
+            <div className="mt-10 flex gap-4">
+              <a href="/auth" className="rounded-none bg-primary px-5 py-3 text-primary-foreground">Sign in</a>
+              <a href="/auth/student/signup" className="rounded-none border border-white/20 px-5 py-3">Create account</a>
+            </div>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+        <div className="flex items-center bg-primary text-primary-foreground px-10 py-20">
+          <div className="max-w-xl">
+            <h2 className="text-3xl font-semibold">Built for students and teachers</h2>
+            <p className="mt-3 opacity-90">We emphasize clarity, speed, and productive flows with a distinct dark/blue aesthetic.</p>
+            <ul className="mt-6 space-y-2 list-disc list-inside">
+              <li>Clean, role-based dashboards</li>
+              <li>Ordered modules and assignments per classroom</li>
+              <li>Interview sessions + transcripts + feedback</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Bento Grid */}
+      <section className="px-6 md:px-10 py-16 bg-background">
+        <div className="mx-auto max-w-6xl">
+          <h3 className="text-2xl font-semibold">Why MyUni</h3>
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="rounded-none border border-white/15 bg-card/40 p-5">
+              <div className="text-sm text-muted-foreground">Submissions</div>
+              <div className="mt-1 text-xl font-medium">Instant verdicts</div>
+              <p className="mt-2 text-sm text-muted-foreground">Compile, run, and evaluate code across problems with detailed per-test results.</p>
+            </div>
+            <div className="rounded-none border border-white/15 bg-card/40 p-5">
+              <div className="text-sm text-muted-foreground">Classrooms</div>
+              <div className="mt-1 text-xl font-medium">Structured learning</div>
+              <p className="mt-2 text-sm text-muted-foreground">Teachers create modules, map assignments, and track student progress.</p>
+            </div>
+            <div className="rounded-none border border-white/15 bg-card/40 p-5">
+              <div className="text-sm text-muted-foreground">Interviews</div>
+              <div className="mt-1 text-xl font-medium">Practice that sticks</div>
+              <p className="mt-2 text-sm text-muted-foreground">Run mock sessions, capture transcripts, and view actionable feedback.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="px-6 md:px-10 py-16 bg-black text-white">
+        <div className="mx-auto max-w-6xl grid gap-4 md:grid-cols-3">
+          <div className="rounded-none border border-white/15 p-5">
+            <div className="text-xl font-semibold">Super fast and clean.</div>
+            <p className="mt-2 text-sm text-zinc-300">Our students love the verdict speed and clarity of feedback.</p>
+          </div>
+          <div className="rounded-none border border-white/15 p-5">
+            <div className="text-xl font-semibold">Perfect for modules.</div>
+            <p className="mt-2 text-sm text-zinc-300">Easy to plan, order, and run assignments per classroom.</p>
+          </div>
+          <div className="rounded-none border border-white/15 p-5">
+            <div className="text-xl font-semibold">Interview ready.</div>
+            <p className="mt-2 text-sm text-zinc-300">Mock sessions with transcripts helped me land my offer.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="px-6 md:px-10 py-16 bg-primary text-primary-foreground">
+        <div className="mx-auto max-w-6xl flex items-center justify-between gap-6 flex-col md:flex-row">
+          <div>
+            <h4 className="text-2xl font-semibold">Start building your skills today</h4>
+            <p className="opacity-90">Sign in to join classrooms or create assignments as a teacher.</p>
+          </div>
+          <a href="/auth" className="rounded-none bg-black px-5 py-3 text-white">Sign in</a>
+        </div>
+      </section>
+    </main>
+  )
 }

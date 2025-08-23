@@ -13,7 +13,21 @@ export default async function StudentDashboard() {
         <h1 className="text-2xl font-semibold">Student Dashboard</h1>
         <LogoutButton />
       </div>
-      <p className="text-muted-foreground mt-2">This is a placeholder page after sign in.</p>
+      <p className="text-muted-foreground mt-2">Overview cards and charts are placeholders.</p>
+      <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="rounded-none border border-white/15 bg-card/40 p-4">
+          <div className="text-sm text-muted-foreground">Assignments</div>
+          <div className="mt-1 text-2xl font-bold">--</div>
+        </div>
+        <div className="rounded-none border border-white/15 bg-card/40 p-4">
+          <div className="text-sm text-muted-foreground">Pending</div>
+          <div className="mt-1 text-2xl font-bold">--</div>
+        </div>
+        <div className="rounded-none border border-white/15 bg-card/40 p-4">
+          <div className="text-sm text-muted-foreground">Interview Readiness</div>
+          <div className="mt-1 text-2xl font-bold">--</div>
+        </div>
+      </div>
     </div>
   )
 }

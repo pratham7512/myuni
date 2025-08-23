@@ -16,7 +16,7 @@ export default function StudentSignInPage() {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const res = await signIn("credentials", { email, password, redirect: true, callbackUrl: "/student" })
+    const res = await signIn("credentials", { email, password, redirect: true, callbackUrl: "/auth/redirect" })
     if (res?.error) setError("Invalid credentials")
   }
 
@@ -46,7 +46,7 @@ export default function StudentSignInPage() {
               <Input id="password" type="password" placeholder="••••••••" value={password} onChange={e=>setPassword(e.target.value)} />
             </div>
             {error && <p className="text-sm text-red-500">{error}</p>}
-            <Button className="w-full" type="submit">Sign in</Button>
+            <Button className="w-full rounded-none" type="submit">Sign in</Button>
             <p className="text-sm text-muted-foreground text-center">No account? <a className="text-primary underline" href="/auth/student/signup">Create one</a></p>
           </form>
         </CardContent>

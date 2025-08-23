@@ -19,19 +19,20 @@ export async function POST(req: NextRequest) {
     }
 
     const { email, password, name, role } = parsed.data
+    const normalizedEmail = email.toLowerCase().trim()
 
     // Single hardcoded admin rule
-    const isAdmin = email === "prathameshdesai679@gmail.com"
+    const isAdmin = normalizedEmail === "prathameshdesai679@gmail.com"
     const adminRole = isAdmin ? "university_admin" : role
 
-    const existing = await prisma.users.findUnique({ where: { email } })
+    const existing = await prisma.users.findUnique({ where: { email: normalizedEmail } })
     if (existing) {
       return NextResponse.json({ error: "Email already registered" }, { status: 409 })
     }
 
     const password_hash = await bcrypt.hash(password, 12)
     const user = await prisma.users.create({
-      data: { email, name, role: adminRole as any, password_hash },
+      data: { email: normalizedEmail, name, role: adminRole as any, password_hash },
     })
 
     // For teachers, create pending access request if not admin

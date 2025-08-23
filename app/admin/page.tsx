@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
+import { Button } from "@/components/ui/button"
 import { revalidatePath } from "next/cache"
 import { LogoutButton } from "@/components/LogoutButton"
 
@@ -41,15 +42,15 @@ export default async function AdminDashboard() {
       <div className="space-y-4">
         {requests.length === 0 && <p>No pending requests</p>}
         {requests.map((r: any)=> (
-          <form key={r.id} action={updateRequest} className="flex items-center justify-between border p-4 rounded">
+          <form key={r.id} action={updateRequest} className="flex items-center justify-between border p-4 rounded-none">
             <div>
               <div className="font-medium">{r.user.email}</div>
               <div className="text-sm text-muted-foreground">User ID: {r.user_id}</div>
             </div>
             <div className="flex gap-2">
               <input type="hidden" name="userId" value={r.user_id} />
-              <button className="px-3 py-1 rounded bg-green-600 text-white" name="action" value="approve">Approve</button>
-              <button className="px-3 py-1 rounded bg-red-600 text-white" name="action" value="reject">Reject</button>
+              <Button className="px-3 py-1" name="action" value="approve">Approve</Button>
+              <Button className="px-3 py-1 bg-red-600 hover:brightness-110" name="action" value="reject" type="submit">Reject</Button>
             </div>
           </form>
         ))}

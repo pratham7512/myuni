@@ -14,8 +14,12 @@ export default async function TeacherHome() {
     redirect("/")
   }
 
-  const req = await prisma.teacher_access_requests.findUnique({ where: { user_id: session.user.id } })
-  const status = req?.status ?? "pending"
+  const req = await prisma.teacher_access_requests.upsert({
+    where: { user_id: session.user.id },
+    create: { user_id: session.user.id },
+    update: {},
+  })
+  const status = req.status
 
   return (
     <div className="max-w-xl mx-auto py-10">
@@ -24,11 +28,20 @@ export default async function TeacherHome() {
         <LogoutButton />
       </div>
       {status === "approved" ? (
-        <p>Your teacher access is approved.</p>
+        <div className="space-y-4">
+          <p>Your teacher access is approved.</p>
+          <a href="/teacher/classrooms" className="rounded-none bg-primary px-3 py-2 text-primary-foreground">Manage Classrooms</a>
+        </div>
       ) : status === "rejected" ? (
-        <p>Your teacher access request was rejected. Contact admin.</p>
+        <form action={async () => { "use server"; await prisma.teacher_access_requests.update({ where: { user_id: session.user.id }, data: { status: "pending" } }) }}>
+          <p className="mb-4">Your teacher access request was rejected. You can resubmit a request.</p>
+          <button className="rounded-none bg-primary px-3 py-2 text-primary-foreground" type="submit">Resubmit Request</button>
+        </form>
       ) : (
-        <p>Your teacher access request is pending approval.</p>
+        <form action={async () => { "use server"; await prisma.teacher_access_requests.delete({ where: { user_id: session.user.id } }) }}>
+          <p className="mb-4">Your teacher access request is pending approval.</p>
+          <button className="rounded-none bg-red-600 px-3 py-2 text-white" type="submit">Cancel Request</button>
+        </form>
       )}
     </div>
   )
