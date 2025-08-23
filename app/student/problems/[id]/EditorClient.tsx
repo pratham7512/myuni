@@ -134,7 +134,9 @@ export function EditorClient({ problemId }: { problemId: string }) {
     if (!meta || typeof meta !== "object") return undefined
     const io = (meta as Record<string, unknown>).io
     if (!io || typeof io !== "object") return undefined
-    return (io as Record<string, unknown>).instructions
+    const instructions = (io as Record<string, unknown>).instructions
+    // Ensure we return a string or undefined for React rendering
+    return typeof instructions === "string" ? instructions : undefined
   })()
 
   return (
@@ -160,7 +162,7 @@ export function EditorClient({ problemId }: { problemId: string }) {
           {ioInstructions && (
             <div className="mt-2 rounded bg-background p-2">
               <div className="mb-1 font-medium">Custom IO</div>
-              <pre className="whitespace-pre-wrap text-xs">{String(ioInstructions)}</pre>
+              <pre className="whitespace-pre-wrap text-xs">{ioInstructions}</pre>
             </div>
           )}
         </div>

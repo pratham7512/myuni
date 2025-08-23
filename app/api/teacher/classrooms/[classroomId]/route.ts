@@ -9,16 +9,17 @@ async function ensureOwner(teacherId: string, classroomId: string) {
   return cls
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { classroomId: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ classroomId: string }> }) {
   try {
+    const { classroomId } = await params
     const session = await getServerSession(authOptions)
     if (!session || session.user.role !== "teacher") return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    const owner = await ensureOwner(session.user.id, params.classroomId)
+    const owner = await ensureOwner(session.user.id, classroomId)
     if (!owner) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     const body = await req.json()
     const name = (body?.name as string | undefined)?.trim()
     if (!name) return NextResponse.json({ error: "Name required" }, { status: 400 })
-    const updated = await prisma.classrooms.update({ where: { id: params.classroomId }, data: { name } })
+    const updated = await prisma.classrooms.update({ where: { id: classroomId }, data: { name } })
     return NextResponse.json(updated)
   } catch (e) {
     console.error("PATCH /api/teacher/classrooms/[classroomId]", e)
@@ -26,13 +27,14 @@ export async function PATCH(req: NextRequest, { params }: { params: { classroomI
   }
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: { classroomId: string } }) {
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ classroomId: string }> }) {
   try {
+    const { classroomId } = await params
     const session = await getServerSession(authOptions)
     if (!session || session.user.role !== "teacher") return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    const owner = await ensureOwner(session.user.id, params.classroomId)
+    const owner = await ensureOwner(session.user.id, classroomId)
     if (!owner) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
-    await prisma.classrooms.delete({ where: { id: params.classroomId } })
+    await prisma.classrooms.delete({ where: { id: classroomId } })
     return NextResponse.json({ ok: true })
   } catch (e) {
     console.error("DELETE /api/teacher/classrooms/[classroomId]", e)

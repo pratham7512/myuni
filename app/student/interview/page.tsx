@@ -1,6 +1,6 @@
 "use client";
 import { Room } from "livekit-client";
-import React, { useContext } from "react";
+import React, { useContext, Suspense } from "react";
 import VoiceCallWidget from "@/components/student/VoiceCallWidget";
 
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,7 @@ import TranscriptionView from "@/components/student/TranscriptionView";
 import { RoomContext, VoiceAssistantControlBar, DisconnectButton } from "@livekit/components-react";
 import { CloseIcon } from "@/components/student/CloseIcon";
 
-export default function Page() {
+function InterviewContent() {
   const router = useRouter();
   const room = useContext(RoomContext);
   const searchParams = useSearchParams();
@@ -55,5 +55,13 @@ export default function Page() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading...</div>}>
+      <InterviewContent />
+    </Suspense>
   );
 }
