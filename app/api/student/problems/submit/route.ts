@@ -50,20 +50,22 @@ function ensureTrailingNewline(s: string | undefined): string | undefined {
   return /\r?\n$/.test(s) ? s : s + "\n"
 }
 
-function deepEqual(a: any, b: any): boolean {
+function deepEqual(a: unknown, b: unknown): boolean {
   if (a === b) return true
   if (typeof a !== typeof b) return false
   if (a && b && typeof a === "object") {
-    if (Array.isArray(a) !== Array.isArray(b)) return false
-    if (Array.isArray(a)) {
-      if (a.length !== b.length) return false
-      for (let i = 0; i < a.length; i++) if (!deepEqual(a[i], b[i])) return false
+    const aObj = a as Record<string, unknown> | unknown[]
+    const bObj = b as Record<string, unknown> | unknown[]
+    if (Array.isArray(aObj) !== Array.isArray(bObj)) return false
+    if (Array.isArray(aObj) && Array.isArray(bObj)) {
+      if (aObj.length !== bObj.length) return false
+      for (let i = 0; i < aObj.length; i++) if (!deepEqual(aObj[i], bObj[i])) return false
       return true
     }
-    const ak = Object.keys(a).sort()
-    const bk = Object.keys(b).sort()
+    const ak = Object.keys(aObj as Record<string, unknown>).sort()
+    const bk = Object.keys(bObj as Record<string, unknown>).sort()
     if (!deepEqual(ak, bk)) return false
-    for (const k of ak) if (!deepEqual(a[k], b[k])) return false
+    for (const k of ak) if (!deepEqual((aObj as Record<string, unknown>)[k], (bObj as Record<string, unknown>)[k])) return false
     return true
   }
   return false
@@ -90,23 +92,23 @@ type ComparatorConfig = {
   caseInsensitive?: boolean
 }
 
-function normalizeComparatorConfig(meta: any | undefined | null): ComparatorConfig {
-  const c = (meta && typeof meta === "object" ? (meta as any) : {}) as any
+function normalizeComparatorConfig(meta: unknown | undefined | null): ComparatorConfig {
+  const c = (meta && typeof meta === "object" ? (meta as Record<string, unknown>) : {})
   const cfg: ComparatorConfig = {}
-  if (typeof c.mode === "string") cfg.mode = c.mode
-  if (typeof c.ignoreOrder === "boolean") cfg.ignoreOrder = c.ignoreOrder
-  if (typeof c.floatEpsilon === "number") cfg.floatEpsilon = c.floatEpsilon
-  if (typeof c.caseInsensitive === "boolean") cfg.caseInsensitive = c.caseInsensitive
+  if (typeof c.mode === "string") cfg.mode = c.mode as ComparatorConfig["mode"]
+  if (typeof c.ignoreOrder === "boolean") cfg.ignoreOrder = c.ignoreOrder as boolean
+  if (typeof c.floatEpsilon === "number") cfg.floatEpsilon = c.floatEpsilon as number
+  if (typeof c.caseInsensitive === "boolean") cfg.caseInsensitive = c.caseInsensitive as boolean
   return cfg
 }
 
-function compareOutputFlexible(stdout: string | null | undefined, expected: any | string | undefined, cfg?: ComparatorConfig): boolean {
+function compareOutputFlexible(stdout: string | null | undefined, expected: unknown | string | undefined, cfg?: ComparatorConfig): boolean {
   const out = (stdout ?? "").trim()
   if (expected === undefined) {
     return out.length === 0
   }
 
-  let expectedValue: any = expected
+  let expectedValue: unknown = expected
   if (typeof expected === "string") {
     try {
       expectedValue = JSON.parse(expected)
@@ -116,8 +118,8 @@ function compareOutputFlexible(stdout: string | null | undefined, expected: any 
   }
 
   // anyOf: allow any of multiple acceptable outputs
-  if (expectedValue && typeof expectedValue === "object" && !Array.isArray(expectedValue) && Array.isArray(expectedValue.anyOf)) {
-    return expectedValue.anyOf.some((candidate: any) => compareOutputFlexible(out, candidate, cfg))
+  if (expectedValue && typeof expectedValue === "object" && !Array.isArray(expectedValue) && Array.isArray((expectedValue as { anyOf?: unknown[] }).anyOf)) {
+    return ((expectedValue as { anyOf: unknown[] }).anyOf).some((candidate) => compareOutputFlexible(out, candidate, cfg))
   }
 
   // If expected is structured (object/array) or cfg.mode === 'json', try JSON deep compare first
@@ -131,7 +133,7 @@ function compareOutputFlexible(stdout: string | null | undefined, expected: any 
   }
 
   if (Array.isArray(expectedValue)) {
-    const expectedTokens = expectedValue.map((v) => String(v))
+    const expectedTokens = (expectedValue as unknown[]).map((v) => String(v))
     const outTokens = extractTokens(out)
     if (cfg?.ignoreOrder) {
       const isNumArr = expectedTokens.every((t) => /^-?\d+(?:\.\d+)?$/.test(t)) && outTokens.every((t) => /^-?\d+(?:\.\d+)?$/.test(t))
@@ -192,14 +194,13 @@ function compareOutputFlexible(stdout: string | null | undefined, expected: any 
     return cfg?.caseInsensitive ? lhs.toLowerCase() === rhs.toLowerCase() : lhs === rhs
   }
 
-  return out === String(expected).trim()
+  return out === String(expectedValue).trim()
 }
 
 async function runSingleJudge0(
   source: string,
   languageId: number,
   stdin?: string,
-  expectedOutput?: string
 ): Promise<Judge0Response> {
   const JUDGE0_URL = process.env.JUDGE0_URL || "https://judge0-ce.p.rapidapi.com"
   const isRapid = /rapidapi/.test(JUDGE0_URL) || !!process.env.JUDGE0_API_KEY
@@ -270,7 +271,7 @@ export async function POST(req: NextRequest) {
       { input: "2\n3 3\n6\n", output: [0, 1] },
     ]
 
-    const normalized: Array<{ stdin?: string; expected?: string; expectedRaw?: any }> = mockTestcases.map((tc) => ({
+    const normalized: Array<{ stdin?: string; expected?: string; expectedRaw?: unknown }> = mockTestcases.map((tc) => ({
       stdin: tc?.input !== undefined ? String(tc.input) : undefined,
       expected: tc?.output !== undefined ? JSON.stringify(tc.output) + "\n" : undefined,
       expectedRaw: tc?.output,
@@ -372,37 +373,38 @@ export async function POST(req: NextRequest) {
     select: { id: true },
   })
 
-  const rawCases = Array.isArray(problem.testcases) ? (problem.testcases as any[]) : []
-  const normalized: Array<{ stdin?: string; expected?: string; expectedRaw?: any }> = rawCases.map((tc, idx) => {
-    if (typeof tc?.stdin === "string") {
+  const rawCases = Array.isArray(problem.testcases) ? (problem.testcases as unknown[]) : []
+  const normalized: Array<{ stdin?: string; expected?: string; expectedRaw?: unknown }> = rawCases.map((tc) => {
+    const tcObj = tc as Record<string, unknown>
+    if (typeof tcObj?.stdin === "string") {
       return {
-        stdin: ensureTrailingNewline(tc.stdin),
-        expected: ensureTrailingNewline(typeof tc.expected === "string" ? tc.expected : undefined),
-        expectedRaw: tc?.expected,
+        stdin: ensureTrailingNewline(tcObj.stdin as string),
+        expected: ensureTrailingNewline(typeof tcObj.expected === "string" ? (tcObj.expected as string) : undefined),
+        expectedRaw: tcObj?.expected,
       }
     }
-    if (typeof tc?.input === "string") {
+    if (typeof tcObj?.input === "string") {
       return {
-        stdin: ensureTrailingNewline(tc.input),
-        expected: ensureTrailingNewline(typeof tc.output === "string" ? tc.output : undefined),
-        expectedRaw: tc?.output,
+        stdin: ensureTrailingNewline(tcObj.input as string),
+        expected: ensureTrailingNewline(typeof tcObj.output === "string" ? (tcObj.output as string) : undefined),
+        expectedRaw: tcObj?.output,
       }
     }
     // Special handling for common shapes like Two Sum: { input: { nums: number[], target: number } }
-    if (tc && tc.input && typeof tc.input === "object" && Array.isArray((tc.input as any).nums) && (tc.input as any).target !== undefined) {
-      const nums = (tc.input as any).nums as any[]
-      const target = (tc.input as any).target
+    if (tcObj && tcObj.input && typeof tcObj.input === "object" && Array.isArray((tcObj.input as Record<string, unknown>).nums) && (tcObj.input as Record<string, unknown>).target !== undefined) {
+      const nums = ((tcObj.input as Record<string, unknown>).nums as unknown[])
+      const target = (tcObj.input as Record<string, unknown>).target as unknown
       const n = Array.isArray(nums) ? nums.length : 0
       const line1 = `${n}\n`
       const line2 = `${nums.join(" ")}\n`
       const line3 = `${String(target)}\n`
       const stdin = line1 + line2 + line3
-      const expected = tc?.output !== undefined ? JSON.stringify(tc.output) + "\n" : undefined
-      return { stdin, expected, expectedRaw: tc?.output }
+      const expected = tcObj?.output !== undefined ? JSON.stringify((tcObj as Record<string, unknown>).output) + "\n" : undefined
+      return { stdin, expected, expectedRaw: (tcObj as Record<string, unknown>).output }
     }
-    const stdin = tc?.input !== undefined ? JSON.stringify(tc.input) + "\n" : undefined
-    const expected = tc?.output !== undefined ? JSON.stringify(tc.output) + "\n" : undefined
-    return { stdin, expected, expectedRaw: tc?.output }
+    const stdin = tcObj?.input !== undefined ? JSON.stringify(tcObj.input) + "\n" : undefined
+    const expected = tcObj?.output !== undefined ? JSON.stringify(tcObj.output) + "\n" : undefined
+    return { stdin, expected, expectedRaw: tcObj?.output }
   })
 
   const langId = mapLanguageToJudge0Id(language)
@@ -418,7 +420,7 @@ export async function POST(req: NextRequest) {
     message?: string | null
   }> = []
 
-  const comparatorCfg = normalizeComparatorConfig((problem as any)?.metadata?.comparator)
+  const comparatorCfg = normalizeComparatorConfig((problem as unknown as { metadata?: { comparator?: unknown } })?.metadata?.comparator)
   for (let i = 0; i < normalized.length; i++) {
     const tc = normalized[i]
     const result = await runSingleJudge0(code, langId, tc.stdin)

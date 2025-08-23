@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { z } from "zod"
 import bcrypt from "bcrypt"
 import { prisma } from "@/lib/prisma"
+import { UserRole } from "@prisma/client"
 
 const SignupSchema = z.object({
   email: z.string().email(),
@@ -23,7 +24,7 @@ export async function POST(req: NextRequest) {
 
     // Single hardcoded admin rule
     const isAdmin = normalizedEmail === "prathameshdesai679@gmail.com"
-    const adminRole = isAdmin ? "university_admin" : role
+    const adminRole: UserRole = (isAdmin ? "university_admin" : role) as UserRole
 
     const existing = await prisma.users.findUnique({ where: { email: normalizedEmail } })
     if (existing) {
@@ -32,7 +33,7 @@ export async function POST(req: NextRequest) {
 
     const password_hash = await bcrypt.hash(password, 12)
     const user = await prisma.users.create({
-      data: { email: normalizedEmail, name, role: adminRole as any, password_hash },
+      data: { email: normalizedEmail, name, role: adminRole, password_hash },
     })
 
     // For teachers, create pending access request if not admin
@@ -45,9 +46,10 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ id: user.id, role: user.role }, { status: 201 })
-  } catch (err: any) {
+  } catch (err) {
     console.error("/api/signup error:", err)
-    return NextResponse.json({ error: err?.message || "Internal Server Error" }, { status: 500 })
+    const message = err instanceof Error ? err.message : "Internal Server Error"
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
 

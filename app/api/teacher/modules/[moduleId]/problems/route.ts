@@ -3,10 +3,11 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { prisma } from "@/lib/prisma"
 
-export async function POST(req: NextRequest, { params }: { params: { moduleId: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ moduleId: string }> }) {
   try {
     const session = await getServerSession(authOptions)
     if (!session || session.user.role !== "teacher") return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    const { moduleId } = await params
     const { problemId, title, statement, testcases, metadata, classroomId } = await req.json()
     let problemIdToUse = problemId as string | undefined
     if (!problemIdToUse) {
@@ -23,16 +24,16 @@ export async function POST(req: NextRequest, { params }: { params: { moduleId: s
       })
       problemIdToUse = created.id
     }
-    const maxIdx = await prisma.module_problem_map.aggregate({ where: { module_id: params.moduleId }, _max: { order_index: true } })
-    await prisma.module_problem_map.create({ data: { module_id: params.moduleId, problem_id: problemIdToUse, order_index: (maxIdx._max.order_index ?? 0) + 1 } })
+    const maxIdx = await prisma.module_problem_map.aggregate({ where: { module_id: moduleId }, _max: { order_index: true } })
+    await prisma.module_problem_map.create({ data: { module_id: moduleId, problem_id: problemIdToUse, order_index: (maxIdx._max.order_index ?? 0) + 1 } })
     return NextResponse.json({ ok: true })
-  } catch (e:any) {
+  } catch (e) {
     console.error("POST /api/teacher/modules/[moduleId]/problems", e)
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { moduleId: string } }) {
+export async function DELETE(req: NextRequest, _ctx: { params: Promise<{ moduleId: string }> }) {
   try {
     const session = await getServerSession(authOptions)
     if (!session || session.user.role !== "teacher") return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
@@ -40,7 +41,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { moduleId:
     if (!mappingId) return NextResponse.json({ error: "mappingId required" }, { status: 400 })
     await prisma.module_problem_map.delete({ where: { id: mappingId } })
     return NextResponse.json({ ok: true })
-  } catch (e:any) {
+  } catch (e) {
     console.error("DELETE /api/teacher/modules/[moduleId]/problems", e)
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }

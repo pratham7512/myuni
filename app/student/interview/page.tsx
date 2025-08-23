@@ -4,7 +4,7 @@ import React, { useContext } from "react";
 import VoiceCallWidget from "@/components/student/VoiceCallWidget";
 
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import TranscriptionView from "@/components/student/TranscriptionView";
 import { RoomContext, VoiceAssistantControlBar, DisconnectButton } from "@livekit/components-react";
 import { CloseIcon } from "@/components/student/CloseIcon";
@@ -12,6 +12,8 @@ import { CloseIcon } from "@/components/student/CloseIcon";
 export default function Page() {
   const router = useRouter();
   const room = useContext(RoomContext);
+  const searchParams = useSearchParams();
+  const interviewId = searchParams.get("interviewId") || undefined;
 
   if (!room) return null;
 
@@ -23,7 +25,7 @@ export default function Page() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch mt-6 min-h-[calc(100vh-250px)]">
           <div className="lg:col-span-2 h-full flex">
             <div className="w-full max-w-[820px] mr-2">
-              <VoiceCallWidget room={room} className="w-full h-full" />
+              <VoiceCallWidget room={room} interviewId={interviewId} className="w-full h-full" />
             </div>
           </div>
           <div className="h-full flex justify-center lg:justify-end">

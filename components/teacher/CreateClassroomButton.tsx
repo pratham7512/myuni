@@ -25,7 +25,7 @@ export default function CreateClassroomButton() {
       }
       setOpen(false)
       window.location.reload()
-    } catch (e:any) {
+    } catch (e) {
       setError("Something went wrong")
     } finally {
       setLoading(false)

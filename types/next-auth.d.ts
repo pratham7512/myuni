@@ -2,6 +2,10 @@ import "next-auth"
 import "next-auth/jwt"
 
 declare module "next-auth" {
+  interface User {
+    id: string
+    role: "student" | "teacher" | "university_admin"
+  }
   interface Session {
     user: {
       id: string

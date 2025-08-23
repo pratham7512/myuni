@@ -16,8 +16,8 @@ export default function AddProblemDialog({ moduleId, classroomId }: { moduleId: 
     setLoading(true)
     setError(null)
     try {
-      let parsedTestcases: any = null
-      let parsedMetadata: any = null
+      let parsedTestcases: unknown = null
+      let parsedMetadata: unknown = null
       try {
         parsedTestcases = testcasesText.trim() === "" ? [] : JSON.parse(testcasesText)
       } catch {
@@ -50,7 +50,7 @@ export default function AddProblemDialog({ moduleId, classroomId }: { moduleId: 
       }
       setOpen(false)
       window.location.reload()
-    } catch (e:any) {
+    } catch (e) {
       setError("Something went wrong")
     } finally {
       setLoading(false)

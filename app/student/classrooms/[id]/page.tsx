@@ -48,7 +48,7 @@ function getRandomQuote() {
           <div className="flex items-start justify-between mb-2">
             <h3 className="font-medium">{mod.title}</h3>
             {mod.interview && (
-              <Link href="/student/interview" className="text-xs border border-white/20 px-3 py-1 hover:bg-white/10">
+              <Link href={`/student/interview?interviewId=${mod.interview.id}`} className="text-xs border border-white/20 px-3 py-1 hover:bg-white/10">
                 Open interview
               </Link>
             )}

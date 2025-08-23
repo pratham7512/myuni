@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { prisma } from "@/lib/prisma"
+import { TeacherRequestStatus } from "@prisma/client"
 
 export async function GET() {
   const session = await getServerSession(authOptions)
@@ -25,10 +26,10 @@ export async function POST(req: NextRequest) {
   if (!userId || !["approve", "reject"].includes(action)) {
     return NextResponse.json({ error: "Invalid payload" }, { status: 400 })
   }
-  const status = action === "approve" ? "approved" : "rejected"
+  const status: TeacherRequestStatus = action === "approve" ? "approved" : "rejected"
   const updated = await prisma.teacher_access_requests.update({
     where: { user_id: userId },
-    data: { status: status as any },
+    data: { status },
   })
   return NextResponse.json(updated)
 }

@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { prisma } from "@/lib/prisma"
+import { TeacherRequestStatus } from "@prisma/client"
 import { redirect } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { revalidatePath } from "next/cache"
@@ -28,7 +29,7 @@ export default async function AdminDashboard() {
     const status = action === "approve" ? "approved" : "rejected"
     await prisma.teacher_access_requests.update({
       where: { user_id: userId },
-      data: { status: status as any },
+      data: { status: status as TeacherRequestStatus },
     })
     revalidatePath("/admin")
   }
@@ -41,7 +42,7 @@ export default async function AdminDashboard() {
       </div>
       <div className="space-y-4">
         {requests.length === 0 && <p>No pending requests</p>}
-        {requests.map((r: any)=> (
+        {requests.map((r)=> (
           <form key={r.id} action={updateRequest} className="flex items-center justify-between border p-4 rounded-none">
             <div>
               <div className="font-medium">{r.user.email}</div>

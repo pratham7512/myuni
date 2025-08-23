@@ -48,10 +48,9 @@ export async function GET() {
     });
     return NextResponse.json(data, { headers });
   } catch (error) {
-    if (error instanceof Error) {
-      console.error(error);
-      return new NextResponse(error.message, { status: 500 });
-    }
+    const message = error instanceof Error ? error.message : "Internal Server Error";
+    console.error(error);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 

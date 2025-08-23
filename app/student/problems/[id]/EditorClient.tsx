@@ -76,8 +76,8 @@ export function EditorClient({ problemId }: { problemId: string }) {
         }
         const data = await res.json()
         if (!cancelled) setProblem(data)
-      } catch (e: any) {
-        if (!cancelled) setError(e?.message || "Something went wrong")
+      } catch (e) {
+        if (!cancelled) setError(e instanceof Error ? e.message : "Something went wrong")
       } finally {
         if (!cancelled) setLoading(false)
       }
@@ -103,8 +103,8 @@ export function EditorClient({ problemId }: { problemId: string }) {
       }
       const data = await res.json()
       setResult(data)
-    } catch (e: any) {
-      setError(e?.message || "Submission failed")
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Submission failed")
     } finally {
       setSubmitting(false)
     }
@@ -129,7 +129,13 @@ export function EditorClient({ problemId }: { problemId: string }) {
     java: "java",
   }
 
-  const ioInstructions = (problem?.metadata as any)?.io?.instructions
+  const ioInstructions = (() => {
+    const meta = problem?.metadata
+    if (!meta || typeof meta !== "object") return undefined
+    const io = (meta as Record<string, unknown>).io
+    if (!io || typeof io !== "object") return undefined
+    return (io as Record<string, unknown>).instructions
+  })()
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -167,7 +173,7 @@ export function EditorClient({ problemId }: { problemId: string }) {
               id="language"
               className="rounded-md border px-2 py-1 text-sm"
               value={language}
-              onChange={(e) => setLanguage(e.target.value as any)}
+              onChange={(e) => setLanguage(e.target.value as Language)}
             >
               {LANGUAGE_OPTIONS.map((lang) => (
                 <option key={lang} value={lang}>{lang}</option>

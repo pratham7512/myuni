@@ -109,7 +109,7 @@ export default function UnifiedAuthPage() {
           <form onSubmit={onSubmit} onChange={resetErrors} className="space-y-6">
             <div className="space-y-3">
               <Label className="text-sm font-medium text-white/90">Continue as</Label>
-              <Tabs value={role} onValueChange={(v) => setRole(v as any)} className="w-full">
+              <Tabs value={role} onValueChange={(v) => setRole(v as "student" | "teacher")} className="w-full">
                 <TabsList className="grid w-full grid-cols-2 bg-white/10 border-0">
                   <TabsTrigger
                     value="student"

@@ -3,6 +3,7 @@ import Credentials from "next-auth/providers/credentials"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcrypt"
 import { z } from "zod"
+import { UserRole } from "@prisma/client"
 
 const LoginSchema = z.object({
   email: z.string().email("Invalid email"),
@@ -38,7 +39,7 @@ export const authOptions: NextAuthOptions = {
             id: user.id,
             email: user.email,
             name: user.name ?? undefined,
-            role: user.role as any,
+            role: user.role as UserRole,
           }
         } catch (e) {
           console.error("authorize error", e)
@@ -50,15 +51,15 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.userId = (user as any).id
-        token.role = (user as any).role
+        token.userId = (user as User).id
+        token.role = (user as User & { role: UserRole }).role
       }
       return token
     },
     async session({ session, token }) {
       if (session.user && token) {
         session.user.id = token.userId as string
-        session.user.role = (token.role as any) || "student"
+        session.user.role = (token.role as UserRole) || "student"
       }
       return session
     },

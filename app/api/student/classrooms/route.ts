@@ -15,7 +15,7 @@ export async function GET() {
       orderBy: { joined_at: "desc" },
     })
     return NextResponse.json(memberships)
-  } catch (e: any) {
+  } catch (e) {
     console.error("GET /api/student/classrooms", e)
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }

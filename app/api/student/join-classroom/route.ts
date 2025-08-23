@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
     })
 
     return NextResponse.json({ ok: true, classroomId: classroom.id })
-  } catch (e: any) {
+  } catch (e) {
     console.error("POST /api/student/join-classroom", e)
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }

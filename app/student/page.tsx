@@ -107,7 +107,7 @@ export default async function StudentDashboard() {
           </div>
           <div className="p-4 border border-white/15 bg-card/40">
             <h3 className="font-medium">Ask for Help</h3>
-            <p className="text-sm text-muted-foreground">Don't hesitate to discuss with teachers or peers.</p>
+            <p className="text-sm text-muted-foreground">Don&#39;t hesitate to discuss with teachers or peers.</p>
           </div>
           <div className="p-4 border border-white/15 bg-card/40">
             <h3 className="font-medium">Review Mistakes</h3>

@@ -11,7 +11,7 @@ import VoiceCallTimer from "./VoiceCallTimer";
 
 const CONNECTION_TIMEOUT_MS = 300 * 60 * 1000; // 30 minutes timeout
 
-export default function VoiceCallWidget({ room, className = "", style = {} }: { room: Room; className?: string; style?: React.CSSProperties }) {
+export default function VoiceCallWidget({ room, interviewId, className = "", style = {} }: { room: Room; interviewId?: string; className?: string; style?: React.CSSProperties }) {
   const [isReconnecting, setIsReconnecting] = React.useState(false);
 
   const onConnectButtonClicked = useCallback(async () => {
@@ -47,25 +47,37 @@ export default function VoiceCallWidget({ room, className = "", style = {} }: { 
       }
 
       await room.connect(connectionDetailsData.serverUrl, connectionDetailsData.participantToken);
-      
-      // Set interview info as participant attributes
-      const interviewInfo = JSON.parse(localStorage.getItem('interviewInfo') || '{}');
-      if (interviewInfo && Object.keys(interviewInfo).length > 0) {
-        room.localParticipant.setAttributes({...interviewInfo});
+
+      // Fetch interview details from DB and set as participant attributes
+      if (interviewId) {
+        try {
+          const apiUrl = new URL(`/api/student/interviews/${interviewId}`, window.location.origin);
+          const resp = await fetch(apiUrl.toString(), { cache: 'no-store' });
+          if (resp.ok) {
+            const data: { id: string; module_id: string; title: string; description: string } = await resp.json();
+            room.localParticipant.setAttributes({
+              interviewId: data.id,
+              moduleId: data.module_id,
+              interviewTitle: data.title,
+              interviewDescription: data.description,
+            });
+          }
+        } catch (e) {
+          console.error('Failed to fetch interview details', e);
+        }
       }
       
       await room.localParticipant.setMicrophoneEnabled(true);
       setIsReconnecting(false);
       
-      // Clean up interview info from localStorage since it's now set as attributes
-      localStorage.removeItem('interviewInfo');
+      // No localStorage usage for interview info anymore
     } catch (error) {
       console.error('Connection error:', error);
       // Clear stored details if there's an error
       localStorage.removeItem('voiceCallConnectionDetails');
       throw error;
     }
-  }, [room]);
+  }, [room, interviewId]);
 
   // Add reconnection logic on page load
   useEffect(() => {

@@ -11,7 +11,7 @@ export async function GET() {
     if (!req || req.status !== "approved") return NextResponse.json({ error: "Teacher access not approved" }, { status: 403 })
     const classrooms = await prisma.classrooms.findMany({ where: { teacher_id: session.user.id }, orderBy: { created_at: "desc" } })
     return NextResponse.json(classrooms)
-  } catch (e: any) {
+  } catch (e) {
     console.error("GET /api/teacher/classrooms", e)
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     if (!name) return NextResponse.json({ error: "Name required" }, { status: 400 })
     const classroom = await prisma.classrooms.create({ data: { name, teacher_id: session.user.id, classroom_code: Math.random().toString(36).slice(2, 8).toUpperCase() } })
     return NextResponse.json(classroom, { status: 201 })
-  } catch (e: any) {
+  } catch (e) {
     console.error("POST /api/teacher/classrooms", e)
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
