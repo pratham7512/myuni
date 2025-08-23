@@ -1,12 +1,14 @@
 "use client"
 import { useState, useEffect } from "react"
+import type React from "react"
+
 import { signIn, useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { useMemo } from "react"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Eye, EyeOff } from "lucide-react"
 
 export default function UnifiedAuthPage() {
   const { data: session, status } = useSession()
@@ -23,12 +25,14 @@ export default function UnifiedAuthPage() {
   const [show, setShow] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
 
   const resetErrors = () => setError(null)
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
+    setIsLoading(true)
     const normalizedEmail = email.toLowerCase().trim()
 
     try {
@@ -50,7 +54,7 @@ export default function UnifiedAuthPage() {
         const res = await fetch("/api/signup", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: normalizedEmail, password, name, role })
+          body: JSON.stringify({ email: normalizedEmail, password, name, role }),
         })
         if (!res.ok) {
           const data = await res.json().catch(() => ({ error: "Signup failed" }))
@@ -77,6 +81,8 @@ export default function UnifiedAuthPage() {
     } catch (err) {
       console.error("auth submit error", err)
       setError("Something went wrong")
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -90,82 +96,178 @@ export default function UnifiedAuthPage() {
   }, [status, session, router])
 
   return (
-    <div className="min-h-[calc(100vh-64px)] grid grid-cols-1 md:grid-cols-2">
-      {/* Left: black panel with form */}
-      <div className="bg-black text-white flex items-center justify-center px-6 py-12">
-        <div className="w-full max-w-md space-y-6">
-          <div>
-            <div className="text-2xl font-semibold tracking-tight">{isSignUp ? "Create account" : "Welcome back"}</div>
-            <p className="text-sm text-muted-foreground mt-1">{isSignUp ? "Join MyUni to get started" : "Sign in to continue"}</p>
+    <div className="h-screen overflow-hidden grid grid-cols-1 lg:grid-cols-2">
+      <div className="bg-black text-white flex items-center justify-center px-8 lg:px-12">
+        <div className="w-full max-w-sm space-y-8">
+          <div className="space-y-3">
+            <h1 className="text-3xl font-bold tracking-tight">{isSignUp ? "Create account" : "Welcome back"}</h1>
+            <p className="text-white/70 text-base leading-relaxed">
+              {isSignUp ? "Join MyUni to get started" : "Sign in to continue to your dashboard"}
+            </p>
           </div>
-          <form onSubmit={onSubmit} onChange={resetErrors} className="space-y-4">
-            <div className="space-y-2">
-              <Label>Continue as</Label>
-              <Tabs value={role} onValueChange={(v)=>setRole(v as any)}>
-                <TabsList>
-                  <TabsTrigger value="student">Student</TabsTrigger>
-                  <TabsTrigger value="teacher">Teacher</TabsTrigger>
+
+          <form onSubmit={onSubmit} onChange={resetErrors} className="space-y-6">
+            <div className="space-y-3">
+              <Label className="text-sm font-medium text-white/90">Continue as</Label>
+              <Tabs value={role} onValueChange={(v) => setRole(v as any)} className="w-full">
+                <TabsList className="grid w-full grid-cols-2 bg-white/10 border-0">
+                  <TabsTrigger
+                    value="student"
+                    className="data-[state=active]:bg-white data-[state=active]:text-black text-white/80 font-medium"
+                  >
+                    Student
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="teacher"
+                    className="data-[state=active]:bg-white data-[state=active]:text-black text-white/80 font-medium"
+                  >
+                    Teacher
+                  </TabsTrigger>
                 </TabsList>
-                <TabsContent value="student"><div className="hidden" /></TabsContent>
-                <TabsContent value="teacher"><div className="hidden" /></TabsContent>
               </Tabs>
             </div>
+
             {isSignUp && (
               <div className="space-y-2">
-                <Label htmlFor="name">Full name</Label>
-                <Input id="name" placeholder="Your name" value={name} onChange={(e)=>setName(e.target.value)} />
+                <Label htmlFor="name" className="text-sm font-medium text-white/90">
+                  Full name
+                </Label>
+                <Input
+                  id="name"
+                  placeholder="Enter your full name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-white/40 focus:ring-0 h-11"
+                />
               </div>
             )}
+
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" placeholder="name@university.edu" value={email} onChange={(e)=>setEmail(e.target.value)} />
+              <Label htmlFor="email" className="text-sm font-medium text-white/90">
+                Email address
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="name@university.edu"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-white/40 focus:ring-0 h-11"
+              />
             </div>
+
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password" className="text-sm font-medium text-white/90">
+                Password
+              </Label>
               <div className="relative">
-                <Input id="password" type={show ? "text" : "password"} placeholder="••••••••" value={password} onChange={(e)=>setPassword(e.target.value)} />
-                <button type="button" onClick={()=>setShow((s)=>!s)} className="absolute right-2 top-1/2 -translate-y-1/2 text-sm opacity-80 hover:opacity-100">
-                  {show ? "Hide" : "Show"}
+                <Input
+                  id="password"
+                  type={show ? "text" : "password"}
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-white/40 focus:ring-0 h-11 pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShow(!show)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60 hover:text-white/80 transition-colors"
+                >
+                  {show ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
             </div>
+
             {isSignUp && (
               <div className="space-y-2">
-                <Label htmlFor="confirm">Confirm password</Label>
+                <Label htmlFor="confirm" className="text-sm font-medium text-white/90">
+                  Confirm password
+                </Label>
                 <div className="relative">
-                  <Input id="confirm" type={showConfirm ? "text" : "password"} placeholder="••••••••" value={confirmPassword} onChange={(e)=>setConfirmPassword(e.target.value)} />
-                  <button type="button" onClick={()=>setShowConfirm((s)=>!s)} className="absolute right-2 top-1/2 -translate-y-1/2 text-sm opacity-80 hover:opacity-100">
-                    {showConfirm ? "Hide" : "Show"}
+                  <Input
+                    id="confirm"
+                    type={showConfirm ? "text" : "password"}
+                    placeholder="Confirm your password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-white/40 focus:ring-0 h-11 pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirm(!showConfirm)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60 hover:text-white/80 transition-colors"
+                  >
+                    {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
               </div>
             )}
-            {error && <p className="text-sm text-red-500">{error}</p>}
-            <Button className="w-full rounded-none" type="submit">{isSignUp ? "Create account" : "Sign in"}</Button>
-            <div className="text-xs text-muted-foreground text-center">
-              {isSignUp ? (
-                <button type="button" className="text-primary underline" onClick={()=>setIsSignUp(false)}>Already have an account? Sign in</button>
+
+            {error && (
+              <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3">
+                <p className="text-sm text-red-400">{error}</p>
+              </div>
+            )}
+
+            <Button
+              className="w-full h-11 bg-white text-black hover:bg-white/90 font-medium transition-colors"
+              type="submit"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+                  {isSignUp ? "Creating account..." : "Signing in..."}
+                </div>
+              ) : isSignUp ? (
+                "Create account"
               ) : (
-                <button type="button" className="text-primary underline" onClick={()=>setIsSignUp(true)}>Don’t have an account? Create one</button>
+                "Sign in"
               )}
+            </Button>
+
+            <div className="text-center pt-2">
+              <button
+                type="button"
+                className="text-sm text-white/70 hover:text-white transition-colors underline underline-offset-4"
+                onClick={() => setIsSignUp(!isSignUp)}
+              >
+                {isSignUp ? "Already have an account? Sign in" : "Don't have an account? Create one"}
+              </button>
             </div>
           </form>
         </div>
       </div>
-      {/* Right: blue promotional panel */}
-      <div className="bg-primary text-primary-foreground flex items-center justify-center px-10 py-16">
-        <div className="max-w-lg">
-          <h2 className="text-4xl font-bold tracking-tight">Ace interviews and master DSA with MyUni</h2>
-          <p className="mt-4 text-primary-foreground/90">Practice coding problems, track submissions, and run mock interviews in your classroom. Teachers curate modules and assignments; admins approve teacher access.</p>
-          <ul className="mt-6 space-y-2 text-sm opacity-90 list-disc list-inside">
-            <li>Clean, role-based dashboards</li>
-            <li>Auto-graded code submissions with verdicts</li>
-            <li>Interview sessions with transcripts and feedback</li>
-          </ul>
+
+      <div className="bg-blue-600 text-white flex items-center justify-center px-8 lg:px-16">
+        <div className="max-w-lg space-y-8">
+          <div className="space-y-6">
+            <h2 className="text-4xl lg:text-5xl font-bold tracking-tight leading-tight">
+              Ace interviews and master DSA with MyUni
+            </h2>
+            <p className="text-xl text-blue-100 leading-relaxed">
+              Practice coding problems, track submissions, and run mock interviews in your classroom. Teachers curate
+              modules and assignments; admins approve teacher access.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="w-2 h-2 bg-blue-200 rounded-full mt-2 flex-shrink-0" />
+              <p className="text-blue-100">Clean, role-based dashboards for every user type</p>
+            </div>
+            <div className="flex items-start gap-3">
+              <div className="w-2 h-2 bg-blue-200 rounded-full mt-2 flex-shrink-0" />
+              <p className="text-blue-100">Auto-graded code submissions with instant verdicts</p>
+            </div>
+            <div className="flex items-start gap-3">
+              <div className="w-2 h-2 bg-blue-200 rounded-full mt-2 flex-shrink-0" />
+              <p className="text-blue-100">Interview sessions with transcripts and detailed feedback</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   )
 }
-
-

@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { redirect } from "next/navigation"
+import Link from "next/link"
 
 export default async function ClassroomDetail({ params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions)
@@ -16,36 +17,56 @@ export default async function ClassroomDetail({ params }: { params: { id: string
       },
     },
   })
-  if (!classroom) redirect("/student/classrooms")
+  if (!classroom) redirect("/student")
+
+  const quotes = [
+"Education is the most powerful weapon which you can use to change the world. - Nelson Mandela",
+"Learning is a treasure that will follow its owner everywhere. - Chinese Proverb",
+"The beautiful thing about learning is that nobody can take it away from you. - B.B. King",
+"Study hard, for the well is deep, and our brains are shallow. - Richard Baxter",
+"Learning never exhausts the mind. - Leonardo da Vinci"
+];
+
+function getRandomQuote() {
+  return quotes[Math.floor(Math.random() * quotes.length)];
+}
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-semibold">{classroom.name}</h1>
-        <p className="text-sm text-muted-foreground">Code: {classroom.classroom_code}</p>
+    <div className="font-mono mx-50 w-auto py-8 space-y-8">
+      <div className="h-40 w-full overflow-hidden border border-white/15">
+        <img src={`https://picsum.photos/seed/${encodeURIComponent(classroom.classroom_code)}/1600/400`} alt="Class banner" className="h-full w-full object-cover" />
       </div>
+      <header className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">{classroom.name}</h1>
+          <p className="text-sm text-muted-foreground">Code: {classroom.classroom_code}</p>
+        </div>
+      </header>
 
       {classroom.modules.map((mod) => (
-        <div key={mod.id} className="rounded-none border border-white/15 bg-card/40">
-          <div className="border-b border-white/10 bg-primary/10 px-4 py-3">
-            <h2 className="text-lg font-medium">{mod.title}</h2>
-          </div>
-          <div className="p-4 space-y-2">
-            {mod.module_map.length === 0 && (
-              <p className="text-sm text-muted-foreground">No assignments yet.</p>
-            )}
-            {mod.module_map.map((mm) => (
-              <div key={mm.id} className="flex items-center justify-between border border-white/10 p-3">
-                <div>
-                  <div className="font-medium">{mm.problem.title}</div>
-                  <div className="text-xs text-muted-foreground">Problem ID: {mm.problem_id}</div>
-                </div>
-                <a href="#" className="rounded-none bg-primary px-3 py-2 text-primary-foreground">Open Assignment</a>
-              </div>
+        <div key={mod.id} className="border border-white/15 bg-card/40 p-4">
+          <h3 className="font-medium mb-2">{mod.title}</h3>
+          <div className="space-y-2">
+            {mod.module_map.map((map) => (
+              <Link
+                key={map.id}
+                href={`/student/problems/${map.problem_id}`}
+                className="block text-sm hover:text-primary"
+              >
+                {map.problem.title}
+              </Link>
             ))}
           </div>
         </div>
       ))}
+
+      {classroom.modules.length === 0 && (
+        <div className="col-span-full flex flex-col items-center justify-center py-16 text-center border border-white/15 bg-card/40">
+          <img src="/empty-class.svg" alt="No modules" width={360} height={200} />
+          <p className="mt-4 text-muted-foreground">No modules yet. Check back later or contact your teacher.</p>
+          <p className="mt-2 text-muted-foreground italic">&quot;{getRandomQuote()}&quot;</p>
+        </div>
+      )}
     </div>
   )
 }

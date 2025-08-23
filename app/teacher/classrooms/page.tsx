@@ -21,7 +21,7 @@ export default async function TeacherClassroomsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="font-mono mx-50 w-auto space-y-6">
       <h1 className="text-2xl font-semibold">Your Classrooms</h1>
       <form action={createClassroom} className="flex gap-2">
         <input className="w-64 rounded-none border border-white/15 bg-transparent px-3 py-2 text-sm" placeholder="New classroom name" name="name" />

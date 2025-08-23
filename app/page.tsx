@@ -3,13 +3,14 @@ export default function Home() {
     <main>
       {/* Hero */}
       <section className="grid md:grid-cols-2">
-        <div className="flex items-center bg-black text-white px-10 py-20">
+        <div className="relative flex items-center bg-black text-white px-10 py-24 overflow-hidden">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(600px_200px_at_0%_0%,rgba(37,99,235,0.15),transparent),radial-gradient(400px_160px_at_100%_20%,rgba(37,99,235,0.12),transparent)]" />
           <div className="max-w-xl">
             <h1 className="text-5xl font-extrabold tracking-tight leading-[1.05]">MyUni: Learn, Code, Interview</h1>
             <p className="mt-5 text-zinc-300 text-lg">Join classrooms, solve curated DSA problems, get instant verdicts, and run mock interviews — all in one modern, fast experience.</p>
             <div className="mt-10 flex gap-4">
-              <a href="/auth" className="rounded-none bg-primary px-5 py-3 text-primary-foreground">Sign in</a>
-              <a href="/auth/student/signup" className="rounded-none border border-white/20 px-5 py-3">Create account</a>
+              <a href="/auth" className="inline-flex items-center justify-center whitespace-nowrap rounded-none text-sm font-semibold bg-gradient-to-r from-blue-600 to-blue-500 text-white hover:from-blue-500 hover:to-blue-400 shadow-[0_8px_24px_-12px_rgba(37,99,235,0.6)] h-10 px-5">Sign in</a>
+              <a href="/auth?mode=signup" className="inline-flex items-center justify-center whitespace-nowrap rounded-none text-sm font-semibold border border-white/20 px-5 h-10 hover:border-white/40">Create account</a>
             </div>
           </div>
         </div>
@@ -75,7 +76,7 @@ export default function Home() {
             <h4 className="text-2xl font-semibold">Start building your skills today</h4>
             <p className="opacity-90">Sign in to join classrooms or create assignments as a teacher.</p>
           </div>
-          <a href="/auth" className="rounded-none bg-black px-5 py-3 text-white">Sign in</a>
+          <a href="/auth" className="inline-flex items-center justify-center whitespace-nowrap rounded-none text-sm font-semibold bg-gradient-to-r from-blue-600 to-blue-500 text-white hover:from-blue-500 hover:to-blue-400 shadow-[0_8px_24px_-12px_rgba(37,99,235,0.6)] h-10 px-5">Sign in</a>
         </div>
       </section>
     </main>
