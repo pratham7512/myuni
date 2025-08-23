@@ -3,6 +3,8 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { redirect } from "next/navigation"
 import { Button } from "@/components/ui/button"
+import CreateModuleDialog from "@/components/teacher/CreateModuleDialog"
+import Image from "next/image"
 
 export default async function TeacherClassroomManage({ params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions)
@@ -24,13 +26,14 @@ export default async function TeacherClassroomManage({ params }: { params: { id:
   }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">Manage: {classroom.name}</h1>
-      <form action={addModule} className="grid grid-cols-1 gap-2 md:grid-cols-3">
-        <input name="title" placeholder="Module title" className="rounded-none border border-white/15 bg-transparent px-3 py-2 text-sm" />
-        <input name="description" placeholder="Description (optional)" className="rounded-none border border-white/15 bg-transparent px-3 py-2 text-sm" />
-        <Button type="submit">Add Module</Button>
-      </form>
+    <div className="font-mono mx-50 w-auto space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold">Manage: {classroom.name}</h1>
+        <div className="text-sm text-muted-foreground">Code: {classroom.classroom_code}</div>
+      </div>
+      <div className="flex items-center justify-end">
+        <CreateModuleDialog classroomId={params.id} />
+      </div>
 
       <div className="space-y-2">
         {modules.map((m) => (
@@ -39,12 +42,20 @@ export default async function TeacherClassroomManage({ params }: { params: { id:
               <div className="font-medium">{m.title}</div>
               <div className="text-sm text-muted-foreground">Order: {m.order_index ?? "-"}</div>
             </div>
-            <form action={async () => { "use server"; await prisma.modules.delete({ where: { id: m.id } }) }}>
-              <Button className="bg-red-600 hover:brightness-110" type="submit">Delete</Button>
-            </form>
+            <div className="flex items-center gap-2">
+              <a href={`/teacher/modules/${m.id}`} className="inline-flex items-center justify-center whitespace-nowrap rounded-none text-sm font-semibold border border-white/15 px-3 h-10 hover:border-white/40">Open</a>
+              <form action={async () => { "use server"; await prisma.modules.delete({ where: { id: m.id } }) }}>
+                <Button className="bg-red-600 hover:brightness-110" type="submit">Delete</Button>
+              </form>
+            </div>
           </div>
         ))}
-        {modules.length === 0 && <p className="text-muted-foreground">No modules yet.</p>}
+        {modules.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <Image src="/empty-class.svg" alt="Empty" width={320} height={200} />
+            <p className="mt-4 text-muted-foreground">No assignments yet. Create your first assignment to get started.</p>
+          </div>
+        )}
       </div>
     </div>
   )
