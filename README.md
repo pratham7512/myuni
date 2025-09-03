@@ -4,6 +4,10 @@
 
 MyUni is a comprehensive, fully-functional web application designed to facilitate coding education. It provides a seamless platform for teachers to manage classrooms, create coding problems, and conduct mock interviews. Students can join classrooms, solve problems in an integrated code editor, submit their solutions for instant feedback, and participate in real-time, AI-assisted mock interviews. The application is built with a modern tech stack and features a robust backend with code execution capabilities.
 
+## Achievements
+
+- **Top 5 in AI Hiring Show by Rabbit AI**: We are proud to have been recognized as one of the top 5 projects in the AI Hiring show organized by Rabbit AI.
+
 ## Key Features
 
 ### For Students:
