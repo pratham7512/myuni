@@ -4,7 +4,7 @@ import { redirect } from "next/navigation"
 
 export default async function AfterLoginRedirect() {
   const session = await getServerSession(authOptions)
-  if (!session?.user) redirect("/auth/student")
+  if (!session?.user) redirect("/auth")
   const role = session.user.role
   if (role === "university_admin") redirect("/admin")
   if (role === "teacher") redirect("/teacher")
