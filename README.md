@@ -72,11 +72,20 @@ To get a local copy up and running, follow these simple steps.
     ```
 3.  **Set up your environment variables**
 
-    Create a `.env` file in the root of the project and add your database connection string:
+    copy `.env` from the .env.example file in the root of the project and add your database connection string :
     ```env
     DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE"
     ```
-    You will also need to configure NextAuth.js providers and a `NEXTAUTH_SECRET`.
+    copy `.env` from the .env.local.example file in the root of the project 
+
+    Sign up for LiveKit Cloud then set up the environment by copying .env.example to `.env.local` and filling in the required keys:
+
+    - `LIVEKIT_URL`
+    - `LIVEKIT_API_KEY`
+    - `LIVEKIT_API_SECRET`
+
+   Similary sign up for Judge Zero and set up the environment by 
+   copying the enviroment variables mentioned in the `env.local`
 
 4.  **Apply database migrations**
 
@@ -89,5 +98,15 @@ To get a local copy up and running, follow these simple steps.
     ```bash
     npm run dev
     ```
+
+6. **Ai interview client
+    Go to the agent-client direcotry 
+    ```bash
+    cd agent-client
+    ```
+
+    Follow the readme instructions to setup the client
+
+    
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
