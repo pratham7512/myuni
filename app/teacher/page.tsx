@@ -9,7 +9,7 @@ import Link from "next/link"
 
 export default async function TeacherHome() {
   const session = await getServerSession(authOptions)
-  if (!session) redirect("/auth/teacher")
+  if (!session) redirect("/auth")
 
   if (session.user.role === "university_admin") redirect("/admin")
 
@@ -22,7 +22,8 @@ export default async function TeacherHome() {
     create: { user_id: session.user.id },
     update: {},
   })
-  const status = req.status
+  // const status = req.status
+  const status = "approved"; //hardcoded for now
 
   return (
     <div className="font-mono">

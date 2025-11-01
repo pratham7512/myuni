@@ -8,7 +8,7 @@ import Image from "next/image"
 
 export default async function TeacherClassroomManage({ params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions)
-  if (!session) redirect("/auth/teacher")
+  if (!session) redirect("/auth")
 
   const classroom = await prisma.classrooms.findUnique({ where: { id: params.id } })
   if (!classroom || classroom.teacher_id !== session.user.id) redirect("/teacher/classrooms")

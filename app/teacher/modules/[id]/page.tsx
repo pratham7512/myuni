@@ -7,7 +7,7 @@ import CreateInterviewDialog from "@/components/teacher/CreateInterviewDialog"
 
 export default async function ModuleDetailPage({ params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions)
-  if (!session) redirect("/auth/teacher")
+  if (!session) redirect("/auth")
   const mod = await prisma.modules.findUnique({
     where: { id: params.id },
     include: { classroom: true, interview: true, module_map: { include: { problem: true }, orderBy: { order_index: "asc" } } },

@@ -6,7 +6,7 @@ import { LogoutButton } from "@/components/LogoutButton"
 
 export default async function TeacherProfilePage() {
   const session = await getServerSession(authOptions)
-  if (!session) redirect("/auth/teacher")
+  if (!session) redirect("/auth")
   const user = await prisma.users.findUnique({ where: { id: session.user.id } })
   const classrooms = await prisma.classrooms.findMany({ 
     where: { teacher_id: session.user.id }, 

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 
 export default async function TeacherClassroomsPage() {
   const session = await getServerSession(authOptions)
-  if (!session) redirect("/auth/teacher")
+  if (!session) redirect("/auth")
   if (session.user.role !== "teacher") redirect("/")
 
   const classrooms = await prisma.classrooms.findMany({ where: { teacher_id: session.user.id }, orderBy: { created_at: "desc" } })

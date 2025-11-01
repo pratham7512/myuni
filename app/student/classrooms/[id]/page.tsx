@@ -6,7 +6,7 @@ import Link from "next/link"
 
 export default async function ClassroomDetail({ params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions)
-  if (!session) redirect("/auth/student")
+  if (!session) redirect("/auth")
 
   const classroom = await prisma.classrooms.findUnique({
     where: { id: params.id },
